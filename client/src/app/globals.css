@@ -1,26 +1,234 @@
 @import "tailwindcss";
 
+/*
+  Gewathu light garden theme.
+  Source values live on --gewathu-* so @theme can expose --color-* without a circular reference.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gewathu-primary: #2e7d32;
+  --gewathu-primary-hover: #246428;
+  --gewathu-primary-soft: #e6f1dd;
+  --gewathu-background: #ffffff;
+  --gewathu-surface: #ffffff;
+  --gewathu-surface-muted: #f5f8f1;
+  --gewathu-foreground: #1d2b20;
+  --gewathu-text-muted: #637065;
+  --gewathu-border: #dfe7dc;
+  --gewathu-success: #2e7d32;
+  --gewathu-error: #8f2d2d;
+  --gewathu-accent: #f9a825;
+  --gewathu-accent-hover: #e39a12;
+  --gewathu-accent-foreground: #1d2b20;
+  --gewathu-accent-soft: #fff7dc;
+  --gewathu-deep: #12451f;
+  --gewathu-shade: #082711;
+  --gewathu-on-deep: #ffffff;
+  --gewathu-on-deep-muted: #cbdacb;
+  --gewathu-hero: #dcebd4;
+  --gewathu-band: #f0f6e9;
+  --gewathu-star: #efad18;
+  --gewathu-tone-mint: #e1f3e3;
+  --gewathu-tone-mint-ink: #2f7a36;
+  --gewathu-tone-lime: #edf5d3;
+  --gewathu-tone-lime-ink: #56830d;
+  --gewathu-tone-clay: #f4e5da;
+  --gewathu-tone-clay-ink: #a45b30;
+  --gewathu-tone-soil: #eee1d5;
+  --gewathu-tone-soil-ink: #70401c;
+  --gewathu-tone-sun: #fff1c8;
+  --gewathu-tone-sun-ink: #9a6a00;
+  --gewathu-tone-water: #dff1f7;
+  --gewathu-tone-water-ink: #247397;
+
+  --content-max-width: 73.75rem;
+  --header-max-width: 77.5rem;
+  --page-gutter: 2.5rem;
+  --section-space: 5.75rem;
+  --gewathu-radius-card: 0.875rem;
+  --gewathu-radius-button: 0.5rem;
+  --gewathu-radius-panel: 1.25rem;
+  --gewathu-shadow-card: 0 16px 40px rgb(23 59 30 / 0.08);
+  --gewathu-shadow-search: 0 18px 45px rgb(16 40 23 / 0.22);
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (max-width: 42.5rem) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --page-gutter: 1.75rem;
+    --section-space: 4.375rem;
   }
 }
 
+@theme inline {
+  --color-primary: var(--gewathu-primary);
+  --color-primary-hover: var(--gewathu-primary-hover);
+  --color-primary-soft: var(--gewathu-primary-soft);
+  --color-background: var(--gewathu-background);
+  --color-surface: var(--gewathu-surface);
+  --color-surface-muted: var(--gewathu-surface-muted);
+  --color-foreground: var(--gewathu-foreground);
+  --color-text-muted: var(--gewathu-text-muted);
+  --color-border: var(--gewathu-border);
+  --color-success: var(--gewathu-success);
+  --color-error: var(--gewathu-error);
+  --color-accent: var(--gewathu-accent);
+  --color-accent-hover: var(--gewathu-accent-hover);
+  --color-accent-foreground: var(--gewathu-accent-foreground);
+  --color-accent-soft: var(--gewathu-accent-soft);
+  --color-deep: var(--gewathu-deep);
+  --color-shade: var(--gewathu-shade);
+  --color-on-deep: var(--gewathu-on-deep);
+  --color-on-deep-muted: var(--gewathu-on-deep-muted);
+  --color-hero: var(--gewathu-hero);
+  --color-band: var(--gewathu-band);
+  --color-star: var(--gewathu-star);
+  --color-tone-mint: var(--gewathu-tone-mint);
+  --color-tone-mint-ink: var(--gewathu-tone-mint-ink);
+  --color-tone-lime: var(--gewathu-tone-lime);
+  --color-tone-lime-ink: var(--gewathu-tone-lime-ink);
+  --color-tone-clay: var(--gewathu-tone-clay);
+  --color-tone-clay-ink: var(--gewathu-tone-clay-ink);
+  --color-tone-soil: var(--gewathu-tone-soil);
+  --color-tone-soil-ink: var(--gewathu-tone-soil-ink);
+  --color-tone-sun: var(--gewathu-tone-sun);
+  --color-tone-sun-ink: var(--gewathu-tone-sun-ink);
+  --color-tone-water: var(--gewathu-tone-water);
+  --color-tone-water-ink: var(--gewathu-tone-water-ink);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: var(--gewathu-radius-card);
+  --radius-button: var(--gewathu-radius-button);
+  --radius-panel: var(--gewathu-radius-panel);
+  --shadow-card: var(--gewathu-shadow-card);
+  --shadow-search: var(--gewathu-shadow-search);
+
+  --text-display: clamp(3.25rem, 6.2vw, 5.8rem);
+  --text-display--line-height: 0.94;
+  --text-display--letter-spacing: -0.055em;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 80;
+  transform: translateY(-150%);
+  border-radius: var(--radius-button);
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+  padding: 0.6rem 1rem;
+  font-weight: 800;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.shell {
+  width: min(var(--content-max-width), calc(100% - var(--page-gutter)));
+  margin-inline: auto;
+}
+
+.shell-wide {
+  width: min(var(--header-max-width), calc(100% - var(--page-gutter)));
+  margin-inline: auto;
+}
+
+.kicker {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  margin-top: 0.65rem;
+  color: var(--color-deep);
+  font-size: clamp(2rem, 3.7vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.section-title-inverse {
+  color: var(--color-on-deep);
+}
+
+.section-title-sm {
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+}
+
+.kicker-inverse {
+  color: var(--color-accent);
+}
+
+.bundle-mark {
+  box-shadow: 18px 20px 0 var(--color-primary);
+}
+
+.hero-fallback {
+  background-image:
+    radial-gradient(circle at 78% 42%, var(--color-primary-soft), transparent 46%),
+    radial-gradient(circle at 62% 78%, var(--color-band), transparent 42%);
+}
+
+.section-space {
+  padding-block: var(--section-space);
+}
+
+.hero-shade {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-shade) 89%, transparent) 0%,
+    color-mix(in srgb, var(--color-shade) 74%, transparent) 35%,
+    color-mix(in srgb, var(--color-shade) 15%, transparent) 67%,
+    transparent
+  );
+}
+
+@media (max-width: 42.5rem) {
+  .hero-shade {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-shade) 90%, transparent),
+        color-mix(in srgb, var(--color-shade) 56%, transparent)
+      ),
+      linear-gradient(transparent, color-mix(in srgb, var(--color-shade) 70%, transparent));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
 }
