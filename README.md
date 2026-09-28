@@ -5,16 +5,23 @@ Online store for plants, seeds, tools and garden supplies (Sri Lanka). Stack: **
 ## Structure
 
 ```
-client/   Next.js app (storefront, SEO-friendly pages)
-server/   Express API (products, orders, auth, payment webhooks)
+client/   Next.js storefront + admin dashboard (/admin)
+server/   Express API (products, orders, auth, admin CRUD, email notifications)
 ```
 
 The client and server are separate apps that talk over HTTP — run both at once while developing.
+
+## Features
+
+- **Storefront**: home page, category browsing, search, product pages, cart (persisted in the browser), guest or logged-in checkout, order confirmation, customer account with order history.
+- **Admin dashboard** (`/admin`): sign in with an admin account to view stats, manage orders (with status updates), and CRUD products/categories.
+- **Email notifications**: order confirmation, admin new-order alert, and order status-update emails, sent via [Resend](https://resend.com). Without a `RESEND_API_KEY`, emails are just logged to the server console instead of sent — handy for local dev.
 
 ## Prerequisites
 
 - Node.js 20+ and npm
 - A free [Neon](https://neon.tech) Postgres project
+- (Optional) A free [Resend](https://resend.com) account, for real emails
 
 ## First-time setup
 
@@ -32,7 +39,11 @@ The client and server are separate apps that talk over HTTP — run both at once
    cp server/.env.example server/.env
    ```
 
-   Paste your Neon connection strings into `server/.env` as `DATABASE_URL` (pooled) and `DIRECT_URL` (direct).
+   Fill in `server/.env`:
+   - `DATABASE_URL` / `DIRECT_URL` — your Neon connection strings.
+   - `JWT_SECRET` — any long random string (e.g. `openssl rand -hex 32`), used to sign admin/customer session cookies.
+   - `RESEND_API_KEY` / `EMAIL_FROM` / `ADMIN_NOTIFY_EMAIL` — optional; leave `RESEND_API_KEY` blank to just log emails to the console in dev.
+   - `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` — the admin account created by the seed script. **Change the password after your first admin login.**
 
 4. **Configure the client env**:
 
@@ -49,6 +60,8 @@ The client and server are separate apps that talk over HTTP — run both at once
    npm run prisma:seed
    ```
 
+   This seeds 6 categories, ~15 sample products, and the admin user.
+
 ## Running in development
 
 In two terminals, from the repo root:
@@ -58,11 +71,13 @@ npm run dev:server   # http://localhost:4000
 npm run dev:client   # http://localhost:3000
 ```
 
-Check the API is up: open `http://localhost:4000/api/health`.
+- Storefront: `http://localhost:3000`
+- Admin dashboard: `http://localhost:3000/admin/login` (use `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`)
+- API health check: `http://localhost:4000/api/health`
 
 ## Database schema
 
-Defined in [`server/prisma/schema.prisma`](server/prisma/schema.prisma): `Category`, `Product`, `User`, `Order`, `OrderItem`, `Payment`. The `Payment` model is a placeholder ready for a gateway integration (e.g. PayHere for LKR) — it just needs a webhook route in `server/src/routes` that updates `Payment.status`.
+Defined in [`server/prisma/schema.prisma`](server/prisma/schema.prisma): `Category`, `Product`, `User` (with `role`: `CUSTOMER`/`ADMIN`), `Order` (supports guest checkout — `userId` is optional), `OrderItem`, `Payment`, `Subscriber`. The `Payment` model is a placeholder ready for a gateway integration (e.g. PayHere for LKR) — orders currently use cash-on-delivery or bank-transfer-by-email as `paymentMethod`.
 
 After changing the schema:
 
@@ -76,3 +91,5 @@ To inspect data in a GUI: `npm run prisma:studio -w server`.
 
 - Never commit `.env` / `.env.local` — they're already gitignored.
 - The client fetches the API via `NEXT_PUBLIC_API_URL`; update it (and the server's `CLIENT_ORIGIN`) when you deploy.
+- Product photos aren't included — the storefront uses styled gradient placeholders with category icons. Set a product's `imageUrl` (in the admin dashboard) to use a real photo instead.
+- To send real emails, sign up at [resend.com](https://resend.com), verify a sending domain (or use their `onboarding@resend.dev` test address), and set `RESEND_API_KEY` in `server/.env`.

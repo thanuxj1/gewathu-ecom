@@ -26,12 +26,24 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
 }
 
 model Product {
@@ -39,6 +51,9 @@ model Product {
   name        String
   slug        String      @unique
   description String?
+  unit        String?
+  badge       String?
+  featured    Boolean     @default(false)
   priceCents  Int
   imageUrl    String?
   stock       Int         @default(0)
@@ -54,20 +69,34 @@ model User {
   email     String   @unique
   name      String?
   password  String
+  role      Role     @default(CUSTOMER)
   orders    Order[]
   createdAt DateTime @default(now())
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  user       User        @relation(fields: [userId], references: [id])
-  userId     String
-  status     OrderStatus @default(PENDING)
-  totalCents Int
-  items      OrderItem[]
-  payment    Payment?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id               String        @id @default(cuid())
+  user             User?         @relation(fields: [userId], references: [id])
+  userId           String?
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  shippingAddress  String
+  city             String
+  notes            String?
+  paymentMethod    PaymentMethod @default(COD)
+  status           OrderStatus   @default(PENDING)
+  totalCents       Int
+  items            OrderItem[]
+  payment          Payment?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }
 
 model OrderItem {

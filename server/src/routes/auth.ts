@@ -1,0 +1,86 @@
+import { Router } from "express";
+import { z } from "zod";
+import { prisma } from "../lib/prisma.js";
+import { hashPassword, comparePassword } from "../lib/password.js";
+import { signSession, SESSION_COOKIE_NAME } from "../lib/jwt.js";
+import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
+
+export const authRouter = Router();
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+};
+
+const registerSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+authRouter.post(
+  "/register",
+  asyncHandler(async (req, res) => {
+    const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid input" });
+    }
+    const { name, email, password } = parsed.data;
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return res.status(409).json({ error: "An account with this email already exists" });
+    }
+
+    const user = await prisma.user.create({
+      data: { name, email, password: await hashPassword(password) },
+    });
+
+    const token = signSession({ userId: user.id, role: user.role });
+    res.cookie(SESSION_COOKIE_NAME, token, cookieOptions);
+    res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
+  })
+);
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+authRouter.post(
+  "/login",
+  asyncHandler(async (req, res) => {
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
+    const { email, password } = parsed.data;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !(await comparePassword(password, user.password))) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const token = signSession({ userId: user.id, role: user.role });
+    res.cookie(SESSION_COOKIE_NAME, token, cookieOptions);
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+  })
+);
+
+authRouter.post("/logout", (_req, res) => {
+  res.clearCookie(SESSION_COOKIE_NAME);
+  res.json({ ok: true });
+});
+
+authRouter.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const user = await prisma.user.findUnique({ where: { id: req.session!.userId } });
+    if (!user) return res.status(401).json({ error: "Not signed in" });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+  })
+);
