@@ -60,8 +60,18 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
           </ul>
         </div>
       </div>
-      <div className="border-t px-4 py-4 text-center text-xs text-emerald-100" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-        © {new Date().getFullYear()} Gewathu.lk. All rights reserved.
+      <div
+        className="border-t px-4 sm:px-6 lg:px-8 py-4 text-xs text-emerald-100"
+        style={{ borderColor: "rgba(255,255,255,0.1)" }}
+      >
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 sm:flex-row">
+          <p>© {new Date().getFullYear()} Gewathu.lk. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link href="/return-policy" className="hover:text-white">Return Policy</Link>
+            <Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white">Terms &amp; Conditions</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );
