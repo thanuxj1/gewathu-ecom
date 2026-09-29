@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
-import { prisma } from "../lib/prisma.js";
+import { Prisma } from "@prisma/client";
+import { prisma, prismaDirect } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { sendAdminNewOrderEmail, sendOrderConfirmationEmail } from "../lib/email.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
+import { generateCheckoutHash, payhereConfigured, payhereMerchantId, payhereSandbox } from "../lib/payhere.js";
 
 export const ordersRouter = Router();
 
@@ -14,7 +16,7 @@ const createOrderSchema = z.object({
   shippingAddress: z.string().min(1),
   city: z.string().min(1),
   notes: z.string().optional(),
-  paymentMethod: z.enum(["COD", "BANK_TRANSFER"]).default("COD"),
+  paymentMethod: z.enum(["COD", "BANK_TRANSFER", "PAYHERE"]).default("COD"),
   items: z
     .array(z.object({ productId: z.string(), quantity: z.number().int().positive() }))
     .min(1),
@@ -29,8 +31,12 @@ ordersRouter.post(
   }
   const data = parsed.data;
 
+  if (data.paymentMethod === "PAYHERE" && !payhereConfigured) {
+    return res.status(400).json({ error: "Online payment isn't set up yet — please choose Cash on delivery." });
+  }
+
   try {
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prismaDirect.$transaction(async (tx) => {
       const productIds = data.items.map((item) => item.productId);
       const products = await tx.product.findMany({ where: { id: { in: productIds } } });
 
@@ -61,7 +67,7 @@ ordersRouter.post(
 
       const userId = req.session?.userId;
 
-      return tx.order.create({
+      const created = await tx.order.create({
         data: {
           userId: userId ?? undefined,
           customerName: data.customerName,
@@ -76,7 +82,20 @@ ordersRouter.post(
         },
         include: { items: { include: { product: true } } },
       });
-    }, { timeout: 20000 });
+
+      if (data.paymentMethod === "PAYHERE") {
+        await tx.payment.create({
+          data: {
+            orderId: created.id,
+            provider: "payhere",
+            status: "PENDING",
+            amountCents: totalCents,
+          },
+        });
+      }
+
+      return created;
+    }, { timeout: 20000, maxWait: 15000 });
 
     const emailData = {
       id: order.id,
@@ -93,8 +112,34 @@ ordersRouter.post(
     void sendOrderConfirmationEmail(emailData);
     void sendAdminNewOrderEmail(emailData);
 
-    res.status(201).json(order);
+    const payhere =
+      order.paymentMethod === "PAYHERE"
+        ? {
+            merchantId: payhereMerchantId,
+            hash: generateCheckoutHash(order.id, order.totalCents),
+            sandbox: payhereSandbox,
+            notifyUrl: process.env.PAYHERE_NOTIFY_URL ?? "",
+            currency: "LKR" as const,
+          }
+        : undefined;
+
+    res.status(201).json({ ...order, payhere });
   } catch (error) {
+    // Transient DB/connection failures (Neon cold start, pool exhaustion, etc.)
+    // throw Prisma's own error classes with internal-sounding messages — never
+    // show those verbatim to the customer. Our own intentional validation
+    // errors (stock, missing products) are plain `Error`s and are safe to show.
+    const isInfraError =
+      error instanceof Prisma.PrismaClientKnownRequestError ||
+      error instanceof Prisma.PrismaClientUnknownRequestError ||
+      error instanceof Prisma.PrismaClientRustPanicError ||
+      error instanceof Prisma.PrismaClientInitializationError;
+
+    if (isInfraError) {
+      console.error("Order creation database error:", error);
+      return res.status(503).json({ error: "We couldn't reach the database just now. Please try again in a moment." });
+    }
+
     const message = error instanceof Error ? error.message : "Could not place order";
     res.status(400).json({ error: message });
   }

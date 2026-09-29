@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Droplets, Leaf, Sprout } from "lucide-react";
 import { api } from "@/lib/api";
-import type { Category, Product } from "@/lib/types";
+import type { Category, HomepageContent, Product } from "@/lib/types";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -25,31 +25,31 @@ async function getFeaturedProducts(): Promise<Product[]> {
   }
 }
 
-const GUIDES = [
-  { n: "01", title: "Start a vegetable garden", blurb: "A simple guide for beginners" },
-  { n: "02", title: "Choose the right compost", blurb: "Healthier soil, stronger plants" },
-  { n: "03", title: "Water plants the right way", blurb: "Save water and avoid root problems" },
-];
-
-const TESTIMONIALS = [
-  {
-    quote:
-      "The seedlings arrived healthy and carefully packed. The care guide was very useful for a beginner like me.",
-    author: "Home gardener, Kandy",
-  },
-  {
-    quote: "Everything needed for our balcony garden came in one order. Simple service and good-quality products.",
-    author: "Customer, Colombo",
-  },
-];
+async function getHomepageContent(): Promise<HomepageContent | null> {
+  try {
+    return await api.get<HomepageContent>("/api/homepage");
+  } catch {
+    return null;
+  }
+}
 
 export default async function Home() {
-  const [categories, featured] = await Promise.all([getCategories(), getFeaturedProducts()]);
+  const [categories, featured, content] = await Promise.all([
+    getCategories(),
+    getFeaturedProducts(),
+    getHomepageContent(),
+  ]);
+
+  const settings = content?.settings;
+  const heroSlides = content?.heroSlides ?? [];
+  const trustBadges = content?.trustBadges ?? [];
+  const testimonials = content?.testimonials ?? [];
+  const guideCards = content?.guideCards ?? [];
 
   return (
     <div>
-      <HeroSlideshow />
-      <TrustBadges />
+      <HeroSlideshow slides={heroSlides} />
+      <TrustBadges badges={trustBadges} />
 
       {/* Categories */}
       <section id="categories" className="mx-auto max-w-6xl scroll-mt-20 px-4 sm:px-6 lg:px-8 py-16">
@@ -117,20 +117,20 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
         <Reveal className="rounded-[20px] p-8 sm:p-12" style={{ background: "var(--color-primary-light)" }}>
           <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--color-accent-dark)" }}>
-            Seasonal essentials
+            {settings?.seasonalEyebrow ?? "Seasonal essentials"}
           </p>
           <h2 className="mt-2 max-w-lg text-3xl" style={{ color: "var(--color-primary)" }}>
-            Ready for the next planting season?
+            {settings?.seasonalTitle ?? "Ready for the next planting season?"}
           </h2>
           <p className="mt-2 max-w-lg text-sm text-zinc-600">
-            Choose the right seeds, growing media and tools for a productive home garden.
+            {settings?.seasonalBody ?? "Choose the right seeds, growing media and tools for a productive home garden."}
           </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-extrabold text-[#222] transition hover:brightness-95"
             style={{ background: "var(--color-accent)" }}
           >
-            Shop seasonal picks <ArrowRight size={16} />
+            {settings?.seasonalCtaLabel ?? "Shop seasonal picks"} <ArrowRight size={16} />
           </Link>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -163,21 +163,25 @@ export default async function Home() {
           style={{ background: "var(--color-primary)" }}
         >
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-emerald-200">Simple way to begin</p>
-            <h2 className="mt-2 max-w-md text-3xl">Your first home garden, all in one box.</h2>
+            <p className="text-xs font-black uppercase tracking-widest text-emerald-200">
+              {settings?.starterEyebrow ?? "Simple way to begin"}
+            </p>
+            <h2 className="mt-2 max-w-md text-3xl">{settings?.starterTitle ?? "Your first home garden, all in one box."}</h2>
             <p className="mt-2 max-w-md text-sm text-emerald-50">
-              A practical starter bundle with seeds, growing media, hand tools and an easy Sinhala/English planting
-              guide.
+              {settings?.starterBody ??
+                "A practical starter bundle with seeds, growing media, hand tools and an easy Sinhala/English planting guide."}
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-3">
-            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">Beginner friendly</span>
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
+              {settings?.starterBadge ?? "Beginner friendly"}
+            </span>
             <Link
               href="/shop"
               className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-extrabold text-[#222] transition hover:brightness-95"
               style={{ background: "var(--color-accent)" }}
             >
-              Explore starter kits <ArrowRight size={16} />
+              {settings?.starterCtaLabel ?? "Explore starter kits"} <ArrowRight size={16} />
             </Link>
           </div>
         </Reveal>
@@ -198,59 +202,65 @@ export default async function Home() {
             </p>
           </Reveal>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-3">
-            {GUIDES.map((guide, i) => (
-              <Reveal key={guide.n} delay={i * 0.08}>
-                <div
-                  className="rounded-[14px] border bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"
-                  style={{ borderColor: "var(--color-border)" }}
-                >
-                  <span className="text-sm font-black" style={{ color: "var(--color-accent-dark)" }}>
-                    {guide.n}
-                  </span>
-                  <p className="mt-2 font-bold" style={{ color: "var(--color-primary)" }}>
-                    {guide.title}
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-500">{guide.blurb}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          {guideCards.length > 0 && (
+            <div className="mt-8 grid gap-6 sm:grid-cols-3">
+              {guideCards.map((guide, i) => (
+                <Reveal key={guide.id} delay={i * 0.08}>
+                  <div
+                    className="rounded-[14px] border bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"
+                    style={{ borderColor: "var(--color-border)" }}
+                  >
+                    <span className="text-sm font-black" style={{ color: "var(--color-accent-dark)" }}>
+                      {guide.number}
+                    </span>
+                    <p className="mt-2 font-bold" style={{ color: "var(--color-primary)" }}>
+                      {guide.title}
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-500">{guide.blurb}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
-        <Reveal>
-          <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--color-accent-dark)" }}>
-            Loved by home gardeners
-          </p>
-          <h2 className="mt-1 max-w-lg text-3xl" style={{ color: "var(--color-primary)" }}>
-            Growing together, one garden at a time.
-          </h2>
-        </Reveal>
+      {testimonials.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
+          <Reveal>
+            <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--color-accent-dark)" }}>
+              Loved by home gardeners
+            </p>
+            <h2 className="mt-1 max-w-lg text-3xl" style={{ color: "var(--color-primary)" }}>
+              Growing together, one garden at a time.
+            </h2>
+          </Reveal>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
-          {TESTIMONIALS.map((t, i) => (
-            <Reveal key={t.author} delay={i * 0.1}>
-              <blockquote className="rounded-[14px] p-6" style={{ background: "var(--color-primary-light)" }}>
-                <p className="text-sm italic text-foreground">&ldquo;{t.quote}&rdquo;</p>
-                <footer className="mt-3 text-xs font-bold" style={{ color: "var(--color-primary)" }}>
-                  — {t.author}
-                </footer>
-              </blockquote>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            {testimonials.map((t, i) => (
+              <Reveal key={t.id} delay={i * 0.1}>
+                <blockquote className="rounded-[14px] p-6" style={{ background: "var(--color-primary-light)" }}>
+                  <p className="text-sm italic text-foreground">&ldquo;{t.quote}&rdquo;</p>
+                  <footer className="mt-3 text-xs font-bold" style={{ color: "var(--color-primary)" }}>
+                    — {t.author}
+                  </footer>
+                </blockquote>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Newsletter */}
       <section className="py-16 text-white" style={{ background: "var(--color-primary-dark)" }}>
         <Reveal className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs font-black uppercase tracking-widest text-emerald-200">Grow with us</p>
-          <h2 className="mt-1 text-3xl">Fresh ideas for your garden</h2>
+          <p className="text-xs font-black uppercase tracking-widest text-emerald-200">
+            {settings?.newsletterEyebrow ?? "Grow with us"}
+          </p>
+          <h2 className="mt-1 text-3xl">{settings?.newsletterTitle ?? "Fresh ideas for your garden"}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-emerald-100">
-            Receive seasonal tips, useful guides and selected offers.
+            {settings?.newsletterBody ?? "Receive seasonal tips, useful guides and selected offers."}
           </p>
           <div className="mt-6 flex justify-center">
             <NewsletterForm />

@@ -1,20 +1,30 @@
 import Link from "next/link";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
+import type { SiteSettings } from "@/lib/types";
 
-export function Footer() {
+const DEFAULTS = {
+  footerTagline: "Your local online destination for plants, seeds, tools and everything needed to grow at home.",
+  whatsappNumber: "+94 XX XXX XXXX",
+  whatsappLink: "https://wa.me/94",
+  contactEmail: "hello@gewathu.lk",
+  contactLocation: "Sri Lanka",
+  logoUrl: "/logo.png",
+};
+
+export function Footer({ settings }: { settings: SiteSettings | null }) {
+  const s = { ...DEFAULTS, ...settings };
+
   return (
     <footer id="contact" className="mt-16 scroll-mt-20 text-white" style={{ background: "var(--color-footer)" }}>
       <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:px-8 py-12 sm:grid-cols-2 md:grid-cols-4">
         <div>
           <div className="inline-block rounded-xl bg-white p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Gewathu.lk" className="h-24 w-auto" />
+            <img src={s.logoUrl || "/logo.png"} alt="Gewathu.lk" className="h-24 w-auto" />
           </div>
-          <p className="mt-4 text-sm text-emerald-50">
-            Your local online destination for plants, seeds, tools and everything needed to grow at home.
-          </p>
+          <p className="mt-4 text-sm text-emerald-50">{s.footerTagline}</p>
           <a
-            href="https://wa.me/94"
+            href={s.whatsappLink}
             className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold"
             style={{ color: "var(--color-accent)" }}
           >
@@ -44,9 +54,9 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-200">Contact</h3>
           <ul className="mt-3 space-y-2 text-sm text-emerald-50">
-            <li className="flex items-center gap-2"><MessageCircle size={14} /> WhatsApp: +94 XX XXX XXXX</li>
-            <li className="flex items-center gap-2"><Mail size={14} /> hello@gewathu.lk</li>
-            <li className="flex items-center gap-2"><MapPin size={14} /> Sri Lanka</li>
+            <li className="flex items-center gap-2"><MessageCircle size={14} /> WhatsApp: {s.whatsappNumber}</li>
+            <li className="flex items-center gap-2"><Mail size={14} /> {s.contactEmail}</li>
+            <li className="flex items-center gap-2"><MapPin size={14} /> {s.contactLocation}</li>
           </ul>
         </div>
       </div>

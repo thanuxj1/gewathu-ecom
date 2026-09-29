@@ -17,8 +17,8 @@ export default async function AdminCategoriesPage() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-black/[.06] bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-black/[.06] bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-black/[.06] text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="p-4">Icon</th>

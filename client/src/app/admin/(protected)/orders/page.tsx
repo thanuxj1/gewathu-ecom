@@ -39,11 +39,11 @@ export default async function AdminOrdersPage({
         ))}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-black/[.06] bg-white">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-black/[.06] bg-white">
         {!orders || orders.length === 0 ? (
           <p className="p-4 text-sm text-zinc-500">No orders found.</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-black/[.06] text-left text-xs uppercase tracking-wide text-zinc-500">
                 <th className="p-4">Order</th>

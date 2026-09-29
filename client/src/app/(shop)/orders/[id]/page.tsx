@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { Order } from "@/lib/types";
-import { formatDate, formatPrice, orderRef } from "@/lib/format";
+import { formatDate, formatPrice, orderRef, paymentMethodLabel } from "@/lib/format";
 
 async function getOrder(id: string): Promise<Order | null> {
   try {
@@ -67,8 +67,14 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <div className="mt-6 grid gap-1 text-sm text-zinc-600">
           <p><strong>Deliver to:</strong> {order.shippingAddress}, {order.city}</p>
           <p><strong>Phone:</strong> {order.customerPhone}</p>
-          <p><strong>Payment:</strong> {order.paymentMethod === "COD" ? "Cash on delivery" : "Bank transfer"}</p>
+          <p><strong>Payment:</strong> {paymentMethodLabel(order.paymentMethod)}</p>
         </div>
+
+        {order.paymentMethod === "PAYHERE" && order.status === "PENDING" && (
+          <p className="mt-4 rounded-lg p-3 text-xs" style={{ background: "var(--color-primary-light)", color: "var(--color-primary)" }}>
+            We&apos;re confirming your payment with PayHere — this can take a moment. Refresh the page shortly to see the update.
+          </p>
+        )}
       </div>
 
       <div className="mt-8 text-center">

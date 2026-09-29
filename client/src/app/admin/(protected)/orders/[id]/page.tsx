@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { serverGet } from "@/lib/server-api";
 import type { Order } from "@/lib/types";
-import { formatDate, formatPrice, orderRef } from "@/lib/format";
+import { formatDate, formatPrice, orderRef, paymentMethodLabel } from "@/lib/format";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -60,7 +60,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
             <div>
               <dt className="text-zinc-500">Payment method</dt>
-              <dd className="font-medium">{order.paymentMethod === "COD" ? "Cash on delivery" : "Bank transfer"}</dd>
+              <dd className="font-medium">{paymentMethodLabel(order.paymentMethod)}</dd>
             </div>
             {order.notes && (
               <div>

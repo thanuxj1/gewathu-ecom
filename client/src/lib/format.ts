@@ -9,3 +9,13 @@ export function formatDate(iso: string): string {
 export function orderRef(id: string): string {
   return `#${id.slice(-8).toUpperCase()}`;
 }
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  COD: "Cash on delivery",
+  BANK_TRANSFER: "Bank transfer",
+  PAYHERE: "Paid online (PayHere)",
+};
+
+export function paymentMethodLabel(method: string): string {
+  return PAYMENT_METHOD_LABEL[method] ?? method;
+}

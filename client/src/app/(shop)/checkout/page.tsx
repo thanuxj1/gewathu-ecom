@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
 import { api, ApiError } from "@/lib/api";
-import type { Order } from "@/lib/types";
+import type { Order, PaymentMethod } from "@/lib/types";
 
 export default function CheckoutPage() {
   const { lines, subtotalCents, clear } = useCart();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [payhereEnabled, setPayhereEnabled] = useState(false);
   const [form, setForm] = useState({
     customerName: "",
     customerEmail: "",
@@ -20,8 +21,15 @@ export default function CheckoutPage() {
     shippingAddress: "",
     city: "",
     notes: "",
-    paymentMethod: "COD" as "COD" | "BANK_TRANSFER",
+    paymentMethod: "COD" as PaymentMethod,
   });
+
+  useEffect(() => {
+    api
+      .get<{ enabled: boolean }>("/api/payhere/config")
+      .then((res) => setPayhereEnabled(res.enabled))
+      .catch(() => setPayhereEnabled(false));
+  }, []);
 
   if (lines.length === 0) {
     return (
@@ -43,12 +51,63 @@ export default function CheckoutPage() {
         ...form,
         items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
       });
+
+      if (order.paymentMethod === "PAYHERE" && order.payhere) {
+        startPayherePayment(order);
+        return;
+      }
+
       clear();
       router.push(`/orders/${order.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not place your order. Please try again.");
       setSubmitting(false);
     }
+  }
+
+  function startPayherePayment(order: Order) {
+    const payhere = window.payhere;
+    const info = order.payhere!;
+    if (!payhere) {
+      setError("Online payment isn't available right now — please try again or choose Cash on delivery.");
+      setSubmitting(false);
+      return;
+    }
+
+    const [firstName, ...rest] = form.customerName.trim().split(/\s+/);
+
+    payhere.onCompleted = () => {
+      clear();
+      router.push(`/orders/${order.id}`);
+    };
+    payhere.onDismissed = () => {
+      setError("Payment was not completed. You can try again below, or choose Cash on delivery.");
+      setSubmitting(false);
+    };
+    payhere.onError = (message) => {
+      setError(`Payment failed: ${message}`);
+      setSubmitting(false);
+    };
+
+    payhere.startPayment({
+      sandbox: info.sandbox,
+      merchant_id: info.merchantId,
+      return_url: `${window.location.origin}/orders/${order.id}`,
+      cancel_url: `${window.location.origin}/checkout`,
+      notify_url: info.notifyUrl,
+      order_id: order.id,
+      items: "Gewathu.lk order",
+      amount: (order.totalCents / 100).toFixed(2),
+      currency: info.currency,
+      hash: info.hash,
+      first_name: firstName || form.customerName,
+      last_name: rest.join(" ") || ".",
+      email: form.customerEmail,
+      phone: form.customerPhone,
+      address: form.shippingAddress,
+      city: form.city,
+      country: "Sri Lanka",
+    });
   }
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -116,6 +175,16 @@ export default function CheckoutPage() {
           <fieldset>
             <legend className="mb-2 text-sm font-medium">Payment method</legend>
             <div className="flex flex-col gap-2">
+              {payhereEnabled && (
+                <label className="flex items-center gap-2 rounded-lg border border-black/[.1] p-3 text-sm">
+                  <input
+                    type="radio"
+                    checked={form.paymentMethod === "PAYHERE"}
+                    onChange={() => update("paymentMethod", "PAYHERE")}
+                  />
+                  Pay online (Card / PayHere)
+                </label>
+              )}
               <label className="flex items-center gap-2 rounded-lg border border-black/[.1] p-3 text-sm">
                 <input
                   type="radio"
@@ -143,7 +212,11 @@ export default function CheckoutPage() {
             className="w-full rounded-lg px-8 py-3 text-sm font-extrabold text-white transition disabled:opacity-60"
             style={{ background: "var(--color-primary)" }}
           >
-            {submitting ? "Placing order…" : `Place order — ${formatPrice(subtotalCents)}`}
+            {submitting
+              ? form.paymentMethod === "PAYHERE"
+                ? "Opening payment…"
+                : "Placing order…"
+              : `Place order — ${formatPrice(subtotalCents)}`}
           </button>
         </form>
 

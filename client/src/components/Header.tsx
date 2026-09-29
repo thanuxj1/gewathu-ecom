@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { api } from "@/lib/api";
-import type { SessionUser } from "@/lib/types";
+import type { SessionUser, SiteSettings } from "@/lib/types";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -15,7 +15,9 @@ const NAV_LINKS = [
   { href: "/#contact", label: "About & Contact" },
 ];
 
-export function Header() {
+const DEFAULT_BANNER = "Free delivery in selected areas for orders above Rs. 5,000";
+
+export function Header({ settings }: { settings: SiteSettings | null }) {
   const { count } = useCart();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,12 +33,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 overflow-visible bg-white/95 backdrop-blur">
       <div className="px-4 py-1.5 text-center text-[11px] font-medium text-white" style={{ background: "var(--color-primary)" }}>
-        Free delivery in selected areas for orders above Rs. 5,000
+        {settings?.deliveryBannerText ?? DEFAULT_BANNER}
       </div>
       <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
         <Link href="/" aria-label="Gewathu.lk home" className="relative z-10 flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Gewathu.lk" className="h-10 w-auto sm:h-11" />
+          <img src={settings?.logoUrl || "/logo.png"} alt="Gewathu.lk" className="h-10 w-auto sm:h-11" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-semibold lg:flex">

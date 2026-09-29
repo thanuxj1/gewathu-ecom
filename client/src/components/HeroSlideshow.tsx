@@ -4,42 +4,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { ArrowRight, ChevronDown, ChevronRight, Sprout } from "lucide-react";
+import type { HeroSlide } from "@/lib/types";
 
-type Slide = {
-  eyebrow: string;
-  titleWhite: string;
-  titleAccent: string;
-  body: string;
-  primaryCta: { label: string; href: string };
-  secondaryCta: { label: string; href: string };
+const DEFAULT_SLIDE: HeroSlide = {
+  id: "default",
+  order: 0,
+  eyebrow: "Everything for your garden",
+  titleWhite: "Grow better.",
+  titleAccent: "Live greener.",
+  body: "Plants, seeds, garden tools and trusted supplies—carefully selected for Sri Lankan homes.",
+  imageUrl: null,
+  primaryLabel: "Shop Now",
+  primaryHref: "/shop",
+  secondaryLabel: "Learn gardening",
+  secondaryHref: "/#guide",
+  active: true,
 };
-
-const SLIDES: Slide[] = [
-  {
-    eyebrow: "Everything for your garden",
-    titleWhite: "Grow better.",
-    titleAccent: "Live greener.",
-    body: "Plants, seeds, garden tools and trusted supplies—carefully selected for Sri Lankan homes.",
-    primaryCta: { label: "Shop Now", href: "/shop" },
-    secondaryCta: { label: "Learn gardening", href: "/#guide" },
-  },
-  {
-    eyebrow: "Seasonal essentials",
-    titleWhite: "Ready for the",
-    titleAccent: "next planting season?",
-    body: "Choose the right seeds, growing media and tools for a productive home garden.",
-    primaryCta: { label: "Shop seasonal picks", href: "/shop" },
-    secondaryCta: { label: "View categories", href: "/#categories" },
-  },
-  {
-    eyebrow: "Simple way to begin",
-    titleWhite: "Your first home garden,",
-    titleAccent: "all in one box.",
-    body: "A practical starter bundle with seeds, growing media, hand tools and an easy planting guide.",
-    primaryCta: { label: "Explore starter kits", href: "/shop" },
-    secondaryCta: { label: "Read the guide", href: "/#guide" },
-  },
-];
 
 const container: Variants = {
   hidden: {},
@@ -51,21 +31,24 @@ const item: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] } },
 };
 
-export function HeroSlideshow() {
+export function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
+  const list = slides.length > 0 ? slides : [DEFAULT_SLIDE];
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => setActive((i) => (i + 1) % SLIDES.length), 6500);
+    if (list.length < 2) return;
+    const timer = setInterval(() => setActive((i) => (i + 1) % list.length), 6500);
     return () => clearInterval(timer);
-  }, []);
+  }, [list.length]);
 
-  const slide = SLIDES[active];
+  const slide = list[Math.min(active, list.length - 1)];
 
   return (
     <section className="relative overflow-hidden text-white">
       <motion.div
+        key={slide.imageUrl ?? "default"}
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/hero-garden.webp)", backgroundColor: "#dcebd4" }}
+        style={{ backgroundImage: `url(${slide.imageUrl || "/hero-garden.webp"})`, backgroundColor: "#dcebd4" }}
         animate={{ scale: [1, 1.07, 1] }}
         transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -115,39 +98,41 @@ export function HeroSlideshow() {
 
             <motion.div variants={item} className="mt-6 flex flex-wrap items-center gap-5">
               <Link
-                href={slide.primaryCta.href}
+                href={slide.primaryHref}
                 className="group flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-extrabold text-[#222] transition hover:brightness-95"
                 style={{ background: "var(--color-accent)" }}
               >
-                {slide.primaryCta.label}
+                {slide.primaryLabel}
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
-                href={slide.secondaryCta.href}
+                href={slide.secondaryHref}
                 className="group flex items-center gap-1 text-sm font-extrabold text-white"
               >
-                {slide.secondaryCta.label}
+                {slide.secondaryLabel}
                 <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-10 flex gap-2">
-          {SLIDES.map((s, i) => (
-            <button
-              key={s.eyebrow}
-              type="button"
-              aria-label={`Show slide ${i + 1}`}
-              onClick={() => setActive(i)}
-              className="h-1.5 rounded-full transition-all duration-300"
-              style={{
-                width: i === active ? 28 : 8,
-                background: i === active ? "var(--color-accent)" : "rgba(255,255,255,0.5)",
-              }}
-            />
-          ))}
-        </div>
+        {list.length > 1 && (
+          <div className="mt-10 flex gap-2">
+            {list.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                aria-label={`Show slide ${i + 1}`}
+                onClick={() => setActive(i)}
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: i === active ? 28 : 8,
+                  background: i === active ? "var(--color-accent)" : "rgba(255,255,255,0.5)",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <motion.a

@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { serverGet } from "@/lib/server-api";
-import type { Order } from "@/lib/types";
+import type { AdminAnalytics, Order } from "@/lib/types";
 import { formatDate, formatPrice, orderRef } from "@/lib/format";
+import { AnalyticsCharts } from "@/components/admin/AnalyticsCharts";
 
 type Stats = { totalOrders: number; pending: number; revenueCents: number };
 
 export default async function AdminDashboardPage() {
-  const [stats, orders] = await Promise.all([
+  const [stats, orders, analytics] = await Promise.all([
     serverGet<Stats>("/api/admin/orders/stats"),
     serverGet<Order[]>("/api/admin/orders"),
+    serverGet<AdminAnalytics>("/api/admin/analytics"),
   ]);
 
   const recent = (orders ?? []).slice(0, 6);
@@ -23,6 +25,8 @@ export default async function AdminDashboardPage() {
         <StatCard label="Revenue (paid+)" value={formatPrice(stats?.revenueCents ?? 0)} />
       </div>
 
+      {analytics && <AnalyticsCharts analytics={analytics} />}
+
       <div className="mt-8 rounded-xl border border-black/[.06] bg-white">
         <div className="flex items-center justify-between border-b border-black/[.06] p-4">
           <h2 className="font-semibold">Recent orders</h2>
@@ -33,27 +37,29 @@ export default async function AdminDashboardPage() {
         {recent.length === 0 ? (
           <p className="p-4 text-sm text-zinc-500">No orders yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <tbody>
-              {recent.map((order) => (
-                <tr key={order.id} className="border-b border-black/[.06] last:border-0">
-                  <td className="p-4">
-                    <Link href={`/admin/orders/${order.id}`} className="font-medium hover:text-primary">
-                      {orderRef(order.id)}
-                    </Link>
-                  </td>
-                  <td className="p-4 text-zinc-500">{order.customerName}</td>
-                  <td className="p-4 text-zinc-500">{formatDate(order.createdAt)}</td>
-                  <td className="p-4">
-                    <span className="rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-primary">
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right font-semibold">{formatPrice(order.totalCents)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
+              <tbody>
+                {recent.map((order) => (
+                  <tr key={order.id} className="border-b border-black/[.06] last:border-0">
+                    <td className="p-4">
+                      <Link href={`/admin/orders/${order.id}`} className="font-medium hover:text-primary">
+                        {orderRef(order.id)}
+                      </Link>
+                    </td>
+                    <td className="p-4 text-zinc-500">{order.customerName}</td>
+                    <td className="p-4 text-zinc-500">{formatDate(order.createdAt)}</td>
+                    <td className="p-4">
+                      <span className="rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-primary">
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right font-semibold">{formatPrice(order.totalCents)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

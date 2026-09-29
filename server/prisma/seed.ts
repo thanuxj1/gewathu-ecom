@@ -239,6 +239,91 @@ async function main() {
   }
   console.log(`Seeded ${products.length} products`);
 
+  await prisma.siteSettings.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: { id: "singleton" },
+  });
+  console.log("Seeded site settings (defaults)");
+
+  const heroSlides = [
+    {
+      order: 0,
+      eyebrow: "Everything for your garden",
+      titleWhite: "Grow better.",
+      titleAccent: "Live greener.",
+      body: "Plants, seeds, garden tools and trusted supplies—carefully selected for Sri Lankan homes.",
+      primaryLabel: "Shop Now",
+      primaryHref: "/shop",
+      secondaryLabel: "Learn gardening",
+      secondaryHref: "/#guide",
+    },
+    {
+      order: 1,
+      eyebrow: "Seasonal essentials",
+      titleWhite: "Ready for the",
+      titleAccent: "next planting season?",
+      body: "Choose the right seeds, growing media and tools for a productive home garden.",
+      primaryLabel: "Shop seasonal picks",
+      primaryHref: "/shop",
+      secondaryLabel: "View categories",
+      secondaryHref: "/#categories",
+    },
+    {
+      order: 2,
+      eyebrow: "Simple way to begin",
+      titleWhite: "Your first home garden,",
+      titleAccent: "all in one box.",
+      body: "A practical starter bundle with seeds, growing media, hand tools and an easy planting guide.",
+      primaryLabel: "Explore starter kits",
+      primaryHref: "/shop",
+      secondaryLabel: "Read the guide",
+      secondaryHref: "/#guide",
+    },
+  ];
+  if ((await prisma.heroSlide.count()) === 0) {
+    await prisma.heroSlide.createMany({ data: heroSlides });
+  }
+  console.log("Seeded hero slides (if empty)");
+
+  const trustBadges = [
+    { order: 0, icon: "Truck", title: "Local delivery", description: "Across Sri Lanka" },
+    { order: 1, icon: "BadgeCheck", title: "Quality checked", description: "Products you can trust" },
+    { order: 2, icon: "ShieldCheck", title: "Secure payment", description: "Safe & convenient" },
+    { order: 3, icon: "Headphones", title: "Friendly support", description: "Help when you need it" },
+  ];
+  if ((await prisma.trustBadge.count()) === 0) {
+    await prisma.trustBadge.createMany({ data: trustBadges });
+  }
+  console.log("Seeded trust badges (if empty)");
+
+  const guideCards = [
+    { order: 0, number: "01", title: "Start a vegetable garden", blurb: "A simple guide for beginners" },
+    { order: 1, number: "02", title: "Choose the right compost", blurb: "Healthier soil, stronger plants" },
+    { order: 2, number: "03", title: "Water plants the right way", blurb: "Save water and avoid root problems" },
+  ];
+  if ((await prisma.guideCard.count()) === 0) {
+    await prisma.guideCard.createMany({ data: guideCards });
+  }
+  console.log("Seeded guide cards (if empty)");
+
+  const testimonials = [
+    {
+      order: 0,
+      quote: "The seedlings arrived healthy and carefully packed. The care guide was very useful for a beginner like me.",
+      author: "Home gardener, Kandy",
+    },
+    {
+      order: 1,
+      quote: "Everything needed for our balcony garden came in one order. Simple service and good-quality products.",
+      author: "Customer, Colombo",
+    },
+  ];
+  if ((await prisma.testimonial.count()) === 0) {
+    await prisma.testimonial.createMany({ data: testimonials });
+  }
+  console.log("Seeded testimonials (if empty)");
+
   const adminEmail = process.env.ADMIN_SEED_EMAIL ?? "admin@gewathu.lk";
   const adminPassword = process.env.ADMIN_SEED_PASSWORD ?? "changeme123";
   await prisma.user.upsert({

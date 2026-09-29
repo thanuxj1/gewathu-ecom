@@ -16,6 +16,7 @@ The client and server are separate apps that talk over HTTP — run both at once
 - **Storefront**: home page, category browsing, search, product pages, cart (persisted in the browser), guest or logged-in checkout, order confirmation, customer account with order history.
 - **Admin dashboard** (`/admin`): sign in with an admin account to view stats, manage orders (with status updates), and CRUD products/categories.
 - **Email notifications**: order confirmation, admin new-order alert, and order status-update emails, sent via [Resend](https://resend.com). Without a `RESEND_API_KEY`, emails are just logged to the server console instead of sent — handy for local dev.
+- **Online payment**: [PayHere](https://www.payhere.lk) checkout (onsite popup, no redirect) alongside Cash on Delivery / Bank Transfer. Without `PAYHERE_MERCHANT_ID`/`PAYHERE_MERCHANT_SECRET`, the "Pay online" option is simply hidden at checkout — COD/bank transfer keep working either way.
 
 ## Prerequisites
 
@@ -44,6 +45,7 @@ The client and server are separate apps that talk over HTTP — run both at once
    - `JWT_SECRET` — any long random string (e.g. `openssl rand -hex 32`), used to sign admin/customer session cookies.
    - `RESEND_API_KEY` / `EMAIL_FROM` / `ADMIN_NOTIFY_EMAIL` — optional; leave `RESEND_API_KEY` blank to just log emails to the console in dev.
    - `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` — the admin account created by the seed script. **Change the password after your first admin login.**
+   - `PAYHERE_MERCHANT_ID` / `PAYHERE_MERCHANT_SECRET` / `PAYHERE_MODE` / `PAYHERE_NOTIFY_URL` — optional; see [Setting up PayHere](#setting-up-payhere) below.
 
 4. **Configure the client env**:
 
@@ -77,7 +79,7 @@ npm run dev:client   # http://localhost:3000
 
 ## Database schema
 
-Defined in [`server/prisma/schema.prisma`](server/prisma/schema.prisma): `Category`, `Product`, `User` (with `role`: `CUSTOMER`/`ADMIN`), `Order` (supports guest checkout — `userId` is optional), `OrderItem`, `Payment`, `Subscriber`. The `Payment` model is a placeholder ready for a gateway integration (e.g. PayHere for LKR) — orders currently use cash-on-delivery or bank-transfer-by-email as `paymentMethod`.
+Defined in [`server/prisma/schema.prisma`](server/prisma/schema.prisma): `Category`, `Product`, `User` (with `role`: `CUSTOMER`/`ADMIN`), `Order` (supports guest checkout — `userId` is optional; `paymentMethod` is `COD`/`BANK_TRANSFER`/`PAYHERE`), `OrderItem`, `Payment` (one row per PayHere order, tracking gateway status/reference), `Subscriber`.
 
 After changing the schema:
 
@@ -86,6 +88,15 @@ npm run prisma:migrate
 ```
 
 To inspect data in a GUI: `npm run prisma:studio -w server`.
+
+## Setting up PayHere
+
+1. Sign up for a free account at [payhere.lk](https://www.payhere.lk) — no business verification needed to get **sandbox** credentials.
+2. In your PayHere dashboard, find your sandbox **Merchant ID** and **Merchant Secret**, and set them in `server/.env` as `PAYHERE_MERCHANT_ID` / `PAYHERE_MERCHANT_SECRET`. Leave `PAYHERE_MODE="sandbox"` for testing.
+3. `PAYHERE_NOTIFY_URL` **must be a publicly reachable HTTPS URL** — PayHere calls it server-to-server to confirm payment, so `localhost` won't work. For local testing, run a tunnel (e.g. `ngrok http 4000`) and set this to `https://<your-tunnel>.ngrok.io/api/payhere/notify`. Once deployed, point it at your real domain.
+4. Restart the server after changing these — the "Pay online (Card / PayHere)" option will then appear at checkout automatically.
+
+Without a tunnel, you can still verify everything except the final webhook: checkout will open PayHere's real sandbox popup and validate your hash, just stopping short of confirming payment back to your order (since PayHere can't reach `localhost`).
 
 ## Notes
 

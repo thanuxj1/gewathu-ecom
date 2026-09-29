@@ -12,6 +12,14 @@ import { subscribersRouter } from "./routes/subscribers.js";
 import { adminOrdersRouter } from "./routes/admin/orders.js";
 import { adminProductsRouter } from "./routes/admin/products.js";
 import { adminCategoriesRouter } from "./routes/admin/categories.js";
+import { payhereRouter } from "./routes/payhere.js";
+import { homepageRouter } from "./routes/homepage.js";
+import { adminHeroSlidesRouter } from "./routes/admin/heroSlides.js";
+import { adminTrustBadgesRouter } from "./routes/admin/trustBadges.js";
+import { adminTestimonialsRouter } from "./routes/admin/testimonials.js";
+import { adminGuideCardsRouter } from "./routes/admin/guideCards.js";
+import { adminSettingsRouter } from "./routes/admin/settings.js";
+import { adminAnalyticsRouter } from "./routes/admin/analytics.js";
 
 const app = express();
 const port = process.env.PORT ?? 4000;
@@ -33,6 +41,14 @@ app.use("/api/subscribers", subscribersRouter);
 app.use("/api/admin/orders", adminOrdersRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/categories", adminCategoriesRouter);
+app.use("/api/payhere", payhereRouter);
+app.use("/api/homepage", homepageRouter);
+app.use("/api/admin/hero-slides", adminHeroSlidesRouter);
+app.use("/api/admin/trust-badges", adminTrustBadgesRouter);
+app.use("/api/admin/testimonials", adminTestimonialsRouter);
+app.use("/api/admin/guide-cards", adminGuideCardsRouter);
+app.use("/api/admin/settings", adminSettingsRouter);
+app.use("/api/admin/analytics", adminAnalyticsRouter);
 
 // Catches errors forwarded via next(err) — e.g. from asyncHandler-wrapped
 // routes — so a transient failure (like a dropped DB connection) returns a
