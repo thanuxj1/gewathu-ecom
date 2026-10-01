@@ -41,14 +41,14 @@ export default async function ShopPage({
         {products.length} {products.length === 1 ? "product" : "products"}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
         <Link
           href="/shop"
-          className="rounded-lg px-4 py-1.5 text-sm font-bold"
+          className="shrink-0 whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-bold"
           style={
             !params.category
-              ? { background: "var(--color-primary)", color: "#fff" }
-              : { background: "var(--color-surface)", color: "var(--foreground)" }
+              ? { background: "var(--color-primary)", color: "#fff", borderColor: "var(--color-primary)" }
+              : { background: "var(--color-surface)", color: "var(--foreground)", borderColor: "var(--color-border)" }
           }
         >
           All
@@ -61,11 +61,11 @@ export default async function ShopPage({
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-bold"
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-bold"
               style={
                 active
-                  ? { background: "var(--color-primary)", color: "#fff" }
-                  : { background: "var(--color-surface)", color: "var(--foreground)" }
+                  ? { background: "var(--color-primary)", color: "#fff", borderColor: "var(--color-primary)" }
+                  : { background: "var(--color-surface)", color: "var(--foreground)", borderColor: "var(--color-border)" }
               }
             >
               <Icon size={14} />
