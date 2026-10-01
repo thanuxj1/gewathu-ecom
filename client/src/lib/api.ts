@@ -1,8 +1,17 @@
-// "" (relative) in production routes browser requests through this app's own
-// /api rewrite (see next.config.ts) so the session cookie stays same-origin —
-// a direct cross-site URL here would never get the cookie attached back.
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:4000");
+// This module is shared by Client Components (browser) and Server Components
+// (Node, during SSR) alike, and the two need different base URLs:
+//  - In the browser, "" (relative) in production routes through this app's
+//    own /api rewrite (see next.config.ts) so the session cookie stays
+//    same-origin — a direct cross-site URL here never gets the cookie back.
+//  - On the server, there is no browser/cookie jar and no document to resolve
+//    a relative URL against (Node's fetch throws on one) — call the real
+//    backend directly instead.
+function resolveApiUrl(): string {
+  if (typeof window === "undefined") {
+    return process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  }
+  return process.env.NEXT_PUBLIC_API_URL ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:4000");
+}
 
 export class ApiError extends Error {
   constructor(message: string) {
@@ -12,7 +21,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${resolveApiUrl()}${path}`, {
     ...options,
     credentials: "include",
     headers: {
@@ -35,7 +44,7 @@ async function upload<T>(path: string, file: File): Promise<T> {
   const formData = new FormData();
   formData.append("image", file);
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${resolveApiUrl()}${path}`, {
     method: "POST",
     credentials: "include",
     body: formData,
