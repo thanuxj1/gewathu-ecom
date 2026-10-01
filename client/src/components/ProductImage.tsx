@@ -18,6 +18,19 @@ export function ProductImage({
 
   const theme = getCategoryTheme(categorySlug ?? "plants");
 
+  if (theme.spriteIndex === null) {
+    const ThemeIcon = theme.icon;
+    return (
+      <div
+        className={`relative grid place-items-center ${className}`}
+        style={{ backgroundColor: theme.bg }}
+        aria-hidden
+      >
+        <ThemeIcon className="h-12 w-12" style={{ color: theme.iconColor }} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`sprite-photo sprite-${theme.spriteIndex} relative ${className}`}
