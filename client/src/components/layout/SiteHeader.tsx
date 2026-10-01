@@ -53,8 +53,9 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-md">
-      <div className="shell-wide flex h-[70px] items-center gap-1.5 min-[681px]:h-[82px] min-[681px]:gap-7">
+    <>
+      <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-md">
+        <div className="shell-wide flex h-[70px] items-center gap-1.5 min-[681px]:h-[82px] min-[681px]:gap-7">
         <Link href="/" className="shrink-0" aria-label="Gewathu.lk home">
           <BrandMark priority compact />
         </Link>
@@ -119,8 +120,12 @@ export function SiteHeader() {
             <Icon name="menu" className="h-5 w-5" />
           </button>
         </div>
-      </div>
+        </div>
+      </header>
 
+      {/* Rendered outside <header> — backdrop-blur-md on the header creates a
+          containing block for position:fixed descendants in Chromium, which
+          broke this overlay (it was confined to the header's own box). */}
       {open ? (
         <div className="fixed inset-0 z-50 min-[961px]:hidden">
           <button
@@ -167,6 +172,6 @@ export function SiteHeader() {
           </aside>
         </div>
       ) : null}
-    </header>
+    </>
   );
 }
