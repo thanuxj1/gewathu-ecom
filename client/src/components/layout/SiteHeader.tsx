@@ -1,17 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { BrandMark } from "@/components/layout/BrandMark";
 import { Icon } from "@/components/ui/Icon";
 import { navigation } from "@/features/home/home-content";
+import { useCart } from "@/lib/cart-context";
+import { api } from "@/lib/api";
+import type { SessionUser } from "@/lib/types";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { count } = useCart();
+  const [session, setSession] = useState<SessionUser | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
+
+  useEffect(() => {
+    api
+      .get<SessionUser>("/api/auth/me")
+      .then(setSession)
+      .catch(() => setSession(null));
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +45,11 @@ export function SiteHeader() {
   }, [open]);
 
   function focusSearch() {
-    document.getElementById("site-search")?.focus();
+    if (pathname === "/") {
+      document.getElementById("site-search")?.focus();
+    } else {
+      router.push("/shop");
+    }
   }
 
   return (
@@ -71,14 +88,26 @@ export function SiteHeader() {
           >
             <Icon name="search" className="h-5 w-5" />
           </button>
-          <button
-            type="button"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-accent px-4 font-extrabold text-accent-foreground max-[680px]:w-11 max-[680px]:px-0"
+          <Link
+            href={session ? "/account/orders" : "/login"}
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-deep hover:bg-surface-muted min-[681px]:inline-flex"
+            aria-label={session ? "My account" : "Login"}
+          >
+            <Icon name="user" className="h-5 w-5" />
+          </Link>
+          <Link
+            href="/cart"
+            className="relative inline-flex h-11 items-center justify-center gap-2 rounded-full bg-accent px-4 font-extrabold text-accent-foreground max-[680px]:w-11 max-[680px]:px-0"
             aria-label="Cart"
           >
             <Icon name="cart" className="h-5 w-5" />
             <span className="max-[680px]:sr-only">Cart</span>
-          </button>
+            {count > 0 ? (
+              <span className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[0.7rem] font-extrabold text-on-deep">
+                {count}
+              </span>
+            ) : null}
+          </Link>
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-full text-deep hover:bg-surface-muted min-[961px]:hidden"
@@ -127,6 +156,13 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href={session ? "/account/orders" : "/login"}
+                className="border-b border-border py-4 font-extrabold"
+                onClick={() => setOpen(false)}
+              >
+                {session ? "My orders" : "Login"}
+              </Link>
             </nav>
           </aside>
         </div>

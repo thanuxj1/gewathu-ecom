@@ -20,6 +20,7 @@ export const iconNames = [
   "sprout",
   "star",
   "truck",
+  "user",
 ] as const;
 
 export type IconName = (typeof iconNames)[number];
@@ -56,6 +57,7 @@ const paths: Record<IconName, string> = {
   star: "m12 3 2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.8 6.9 18.7l1-5.7-4.1-4 5.7-.8L12 3Z",
   truck:
     "M3 7h11v10H3V7ZM14 10h4l3 3v4h-7v-7ZM6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
+  user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
 };
 
 export function Icon({ name, className, ...props }: IconProps) {

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import { CartProvider } from "@/lib/cart-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,7 +26,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">{children}</body>
+      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
+        <Script src="https://www.payhere.lk/lib/payhere.js" strategy="afterInteractive" />
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }
