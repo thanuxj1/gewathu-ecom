@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import type { SessionUser } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Server-to-server call — see server-api.ts for why this isn't NEXT_PUBLIC_API_URL.
+const API_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
 export async function getServerSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();

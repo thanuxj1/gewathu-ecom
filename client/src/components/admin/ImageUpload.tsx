@@ -4,7 +4,9 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// See lib/api.ts — "" (relative) in production is intentional, proxied via next.config.ts.
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:4000");
 
 function resolveSrc(value: string) {
   return value.startsWith("/") ? `${API_URL}${value}` : value;

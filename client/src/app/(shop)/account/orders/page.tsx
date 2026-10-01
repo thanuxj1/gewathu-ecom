@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { Order } from "@/lib/types";
 import { formatDate, formatPrice, orderRef } from "@/lib/format";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Server-to-server call — see lib/server-api.ts for why this isn't NEXT_PUBLIC_API_URL.
+const API_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
 async function getMyOrders(): Promise<Order[] | null> {
   const cookieStore = await cookies();

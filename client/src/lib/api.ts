@@ -1,4 +1,8 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// "" (relative) in production routes browser requests through this app's own
+// /api rewrite (see next.config.ts) so the session cookie stays same-origin —
+// a direct cross-site URL here would never get the cookie attached back.
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:4000");
 
 export class ApiError extends Error {
   constructor(message: string) {
