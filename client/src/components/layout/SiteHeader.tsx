@@ -39,7 +39,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-md">
       <div className="shell-wide flex h-[70px] items-center gap-1.5 min-[681px]:h-[82px] min-[681px]:gap-7">
         <Link href="/" className="shrink-0" aria-label="Gewathu.lk home">
-          <BrandMark priority />
+          <BrandMark priority compact />
         </Link>
 
         <nav className="ml-auto hidden items-center gap-8 min-[961px]:flex" aria-label="Primary">

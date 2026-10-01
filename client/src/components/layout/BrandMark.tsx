@@ -5,10 +5,13 @@ import { Icon } from "@/components/ui/Icon";
 type BrandMarkProps = {
   priority?: boolean;
   framed?: boolean;
+  /** Constrain by height instead of width — for tight, fixed-height bars like the sticky header. */
+  compact?: boolean;
 };
 
-export function BrandMark({ priority = false, framed = false }: BrandMarkProps) {
+export function BrandMark({ priority = false, framed = false, compact = false }: BrandMarkProps) {
   const frame = framed ? "rounded-lg bg-surface px-3 py-2" : "";
+  const size = compact ? "h-11 w-auto min-[681px]:h-[52px]" : "h-auto w-[118px] min-[681px]:w-[150px]";
 
   if (brand.logoSrc) {
     return (
@@ -18,7 +21,7 @@ export function BrandMark({ priority = false, framed = false }: BrandMarkProps) 
         width={170}
         height={72}
         priority={priority}
-        className={`h-auto w-[118px] min-[681px]:w-[150px] ${frame}`}
+        className={`${size} ${frame}`}
       />
     );
   }
