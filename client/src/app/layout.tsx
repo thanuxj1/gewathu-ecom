@@ -13,14 +13,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gewathu.lk | Everything for Your Garden",
-  description: "Plants, seeds, garden tools and trusted supplies for Sri Lankan homes.",
+  title: {
+    default: "Gewathu.lk | Everything for Your Garden",
+    template: "%s | Gewathu.lk",
+  },
+  description:
+    "Sri Lanka's online destination for plants, seeds, gardening tools and home gardening supplies.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">{children}</body>
     </html>
   );
 }
