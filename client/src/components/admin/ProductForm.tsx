@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
+import { slugify } from "@/lib/format";
 import type { Category, Product } from "@/lib/types";
+import { ImageUpload } from "./ImageUpload";
 
 type Props = {
   categories: Category[];
@@ -14,6 +16,7 @@ export function ProductForm({ categories, product }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [customizingAddress, setCustomizingAddress] = useState(!!product);
   const [form, setForm] = useState({
     name: product?.name ?? "",
     slug: product?.slug ?? "",
@@ -29,6 +32,10 @@ export function ProductForm({ categories, product }: Props) {
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function updateName(name: string) {
+    setForm((f) => ({ ...f, name, slug: customizingAddress ? f.slug : slugify(name) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,14 +72,27 @@ export function ProductForm({ categories, product }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name">
-          <input required value={form.name} onChange={(e) => update("name", e.target.value)} className="input" />
+      <Field label="Product name">
+        <input required value={form.name} onChange={(e) => updateName(e.target.value)} className="input" />
+      </Field>
+
+      {customizingAddress ? (
+        <Field label="Web address">
+          <input
+            required
+            value={form.slug}
+            onChange={(e) => update("slug", slugify(e.target.value))}
+            className="input"
+          />
         </Field>
-        <Field label="Slug">
-          <input required value={form.slug} onChange={(e) => update("slug", e.target.value)} className="input" />
-        </Field>
-      </div>
+      ) : (
+        <p className="text-xs text-zinc-500">
+          Web address: <span className="font-mono">{form.slug || "…"}</span>{" "}
+          <button type="button" onClick={() => setCustomizingAddress(true)} className="font-medium text-primary underline">
+            Customize
+          </button>
+        </p>
+      )}
 
       <Field label="Description">
         <textarea rows={3} value={form.description} onChange={(e) => update("description", e.target.value)} className="input" />
@@ -130,9 +150,7 @@ export function ProductForm({ categories, product }: Props) {
         </Field>
       </div>
 
-      <Field label="Image URL (optional)">
-        <input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} className="input" />
-      </Field>
+      <ImageUpload label="Product photo (optional)" value={form.imageUrl} onChange={(url) => update("imageUrl", url)} />
 
       <label className="flex items-center gap-2 text-sm font-medium">
         <input

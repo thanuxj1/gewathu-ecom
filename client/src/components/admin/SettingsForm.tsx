@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import type { SiteSettings } from "@/lib/types";
+import { ImageUpload } from "./ImageUpload";
 
 export function SettingsForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter();
   const [form, setForm] = useState({
+    logoUrl: settings.logoUrl ?? "",
     deliveryBannerText: settings.deliveryBannerText,
     footerTagline: settings.footerTagline,
     whatsappNumber: settings.whatsappNumber,
@@ -53,6 +55,12 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-8">
+      <Section title="Branding">
+        <div className="sm:col-span-2">
+          <ImageUpload label="Logo" value={form.logoUrl} onChange={(url) => update("logoUrl", url)} />
+        </div>
+      </Section>
+
       <Section title="Announcement Bar">
         <Field label="Delivery banner text" full>
           <input

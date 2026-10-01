@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import { attachSession } from "./middleware/auth.js";
+import { adminUploadsRouter, uploadsDir } from "./routes/admin/uploads.js";
 import { categoriesRouter } from "./routes/categories.js";
 import { productsRouter } from "./routes/products.js";
 import { authRouter } from "./routes/auth.js";
@@ -28,6 +29,7 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? "http://localhost:3000", cre
 app.use(express.json());
 app.use(cookieParser());
 app.use(attachSession);
+app.use("/uploads", express.static(uploadsDir));
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
@@ -49,6 +51,7 @@ app.use("/api/admin/testimonials", adminTestimonialsRouter);
 app.use("/api/admin/guide-cards", adminGuideCardsRouter);
 app.use("/api/admin/settings", adminSettingsRouter);
 app.use("/api/admin/analytics", adminAnalyticsRouter);
+app.use("/api/admin/uploads", adminUploadsRouter);
 
 // Catches errors forwarded via next(err) — e.g. from asyncHandler-wrapped
 // routes — so a transient failure (like a dropped DB connection) returns a

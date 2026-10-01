@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import type { HeroSlide } from "@/lib/types";
+import { ImageUpload } from "./ImageUpload";
 
 export function HeroSlideForm({ slide }: { slide?: HeroSlide }) {
   const router = useRouter();
@@ -76,9 +77,11 @@ export function HeroSlideForm({ slide }: { slide?: HeroSlide }) {
         <textarea required rows={3} value={form.body} onChange={(e) => update("body", e.target.value)} className="input" />
       </Field>
 
-      <Field label="Background image URL (optional — falls back to default photo)">
-        <input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} className="input" />
-      </Field>
+      <ImageUpload
+        label="Background photo (optional — falls back to default photo)"
+        value={form.imageUrl}
+        onChange={(url) => update("imageUrl", url)}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Primary button label">

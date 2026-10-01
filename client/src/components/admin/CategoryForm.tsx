@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
+import { slugify } from "@/lib/format";
 
 export function CategoryForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", slug: "", description: "", icon: "" });
+  const [form, setForm] = useState({ name: "", description: "", icon: "" });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,11 +18,11 @@ export function CategoryForm() {
     try {
       await api.post("/api/admin/categories", {
         name: form.name,
-        slug: form.slug,
+        slug: slugify(form.name),
         description: form.description || undefined,
         icon: form.icon || undefined,
       });
-      setForm({ name: "", slug: "", description: "", icon: "" });
+      setForm({ name: "", description: "", icon: "" });
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not save category");
@@ -31,9 +32,9 @@ export function CategoryForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-5 sm:items-end">
+    <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-4 sm:items-end">
       <label className="block sm:col-span-1">
-        <span className="mb-1 block text-xs font-medium">Icon</span>
+        <span className="mb-1 block text-xs font-medium">Icon (an emoji)</span>
         <input
           value={form.icon}
           onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
@@ -47,15 +48,6 @@ export function CategoryForm() {
           required
           value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          className="input"
-        />
-      </label>
-      <label className="block sm:col-span-1">
-        <span className="mb-1 block text-xs font-medium">Slug</span>
-        <input
-          required
-          value={form.slug}
-          onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
           className="input"
         />
       </label>
@@ -74,7 +66,7 @@ export function CategoryForm() {
       >
         {submitting ? "Adding…" : "Add category"}
       </button>
-      {error && <p className="sm:col-span-5 text-sm text-red-600">{error}</p>}
+      {error && <p className="sm:col-span-4 text-sm text-red-600">{error}</p>}
     </form>
   );
 }

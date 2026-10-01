@@ -19,3 +19,11 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 export function paymentMethodLabel(method: string): string {
   return PAYMENT_METHOD_LABEL[method] ?? method;
 }
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
