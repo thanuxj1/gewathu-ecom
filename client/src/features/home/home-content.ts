@@ -21,8 +21,8 @@ export const navigation: { href: NavHref; label: string }[] = [
 
 export const brand = {
   name: "Gewathu.lk",
-  logoSrc: null as string | null,
-  heroSrc: null as string | null,
+  logoSrc: "/logo.png" as string | null,
+  heroSrc: "/hero-garden.webp" as string | null,
   heroAlt: "A Sri Lankan home gardener tending fresh vegetables",
 };
 
