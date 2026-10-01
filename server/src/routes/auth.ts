@@ -8,10 +8,16 @@ import { asyncHandler } from "../lib/asyncHandler.js";
 
 export const authRouter = Router();
 
+const isProd = process.env.NODE_ENV === "production";
+
+// The API (onrender.com) and client (vercel.app) are different sites, so the
+// session cookie needs SameSite=None to be sent on cross-site fetch() calls —
+// which in turn requires Secure, so this only works over HTTPS. In local dev
+// client and server share the "localhost" site, where Lax (non-Secure) is fine.
 const cookieOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  sameSite: isProd ? ("none" as const) : ("lax" as const),
+  secure: isProd,
   maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
@@ -71,7 +77,7 @@ authRouter.post(
 );
 
 authRouter.post("/logout", (_req, res) => {
-  res.clearCookie(SESSION_COOKIE_NAME);
+  res.clearCookie(SESSION_COOKIE_NAME, { httpOnly: true, sameSite: cookieOptions.sameSite, secure: cookieOptions.secure });
   res.json({ ok: true });
 });
 
